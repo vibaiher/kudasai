@@ -1,1 +1,1 @@
-# kudosai
+# kudasai

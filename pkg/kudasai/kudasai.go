@@ -1,4 +1,4 @@
-package kudosai
+package kudasai
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ func Run(args []string) error {
 
 	switch args[0] {
 	case "help":
-		fmt.Println("Usage: kudosai [command]")
+		fmt.Println("Usage: kudasai [command]")
 	default:
 		fmt.Printf("Unrecognized command: %s\n", args[0])
 		return errors.New("unrecognized command")
