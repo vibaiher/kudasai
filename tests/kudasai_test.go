@@ -20,6 +20,18 @@ func TestRun_Help(t *testing.T) {
 	}
 }
 
+func TestRun_Start(t *testing.T) {
+	err := kudasai.Run([]string{"start"})
+	if err != nil {
+		t.Errorf("Did not expect an error when running the help command")
+	}
+}
+
+func ExampleStart() {
+	kudasai.Run([]string{"start"})
+	// Output: sushi, kudasai
+}
+
 func TestRun_InvalidCommand(t *testing.T) {
 	err := kudasai.Run([]string{"invalid"})
 	if err == nil {
