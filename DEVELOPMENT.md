@@ -14,11 +14,7 @@ To get started with development, ensure you have the following installed:
 
 2. **Install `clitest`:**
 
-   You can install `clitest` using the following command:
-
-   ```bash
-   go install github.com/clitest/clitest@latest
-   ```
+   Follow the instructions on the [official clitest homepage](https://github.com/aureliojargas/clitest) to install clitest.
 
 ## Running tests
 
@@ -33,8 +29,6 @@ We have go unit tests but also a small acceptance test suite.
   ```
 
 2. **Running acceptance tests**
-  
-  Follow the instructions on the [official clitest homepage](https://github.com/aureliojargas/clitest) to install clitest. The you can run:
 
   ```bash
   clitest examples/**
