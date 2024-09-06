@@ -16,15 +16,13 @@ func Run(args []string) error {
 		cmd := exec.Command("echo", "sushi, kudasai")
 		out, err := cmd.Output()
 		if err != nil {
-			fmt.Printf("Unexpected error: %s\n", err)
-			return errors.New("command error")
+			return fmt.Errorf("Unexpected error: %s", err)
 		}
 		fmt.Print(string(out))
 	case "help":
 		fmt.Println("Usage: kudasai [command]")
 	default:
-		fmt.Printf("Unrecognized command: %s\n", args[0])
-		return errors.New("unrecognized command")
+		return fmt.Errorf("Unrecognized command: %s", args[0])
 	}
 
 	return nil
