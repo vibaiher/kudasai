@@ -1,0 +1,2 @@
+$ kudasai help
+Usage: kudasai [command]
