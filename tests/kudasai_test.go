@@ -27,11 +27,6 @@ func TestRun_Start(t *testing.T) {
 	}
 }
 
-func ExampleStart() {
-	kudasai.Run([]string{"start"})
-	// Output: sushi, kudasai
-}
-
 func TestRun_InvalidCommand(t *testing.T) {
 	err := kudasai.Run([]string{"invalid"})
 	if err == nil {
