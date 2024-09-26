@@ -43,7 +43,7 @@ To build a working kudasai binary, you have several alternatives.
   This will generate a binary in the root folder of the project.
 
   ```bash
-  go build -o kudosai main.go
+  go build -o kudasai main.go
   ```
 
 2. **Install the package**
