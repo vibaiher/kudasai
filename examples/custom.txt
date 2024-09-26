@@ -1,0 +1,3 @@
+$ echo '{"commands":{"run": "echo \"sekai no minasan, konnichiha!\""}}' > .kudasai.json
+$ kudasai run
+sekai no minasan, konnichiha!
