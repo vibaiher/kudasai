@@ -9,27 +9,40 @@ import (
 	"os/exec"
 )
 
+type Commands map[string]string
 type KudasaiConfig struct {
-	Commands map[string]string `json:"commands"`
+	Commands Commands `json:"commands"`
 }
 
-func GetCommands(filepath string) (map[string]string, error) {
+func KudasaiDefaultCommands() Commands {
+	return Commands{
+		"start": "echo \"sushi, kudasai\"",
+		"help":  "echo \"Usage: kudasai [command]\"",
+	}
+}
+
+func mergeMaps(map1, map2 map[string]string) map[string]string {
+	for key, value := range map2 {
+		map1[key] = value
+	}
+	return map1
+}
+
+func GetCommands(filepath string) Commands {
 	configFile, err := os.Open(filepath)
 	if err != nil {
-		fmt.Println("Warn! .kudasai.json file not found")
-		return nil, err
+		return KudasaiDefaultCommands()
 	}
-
 	defer configFile.Close()
 
 	content, err := io.ReadAll(configFile)
 	if err != nil {
-		return nil, err
+		return KudasaiDefaultCommands()
 	}
 	var config KudasaiConfig
 	json.Unmarshal(content, &config)
 
-	return config.Commands, nil
+	return mergeMaps(KudasaiDefaultCommands(), config.Commands)
 }
 
 func Execute(command string) error {
@@ -53,29 +66,16 @@ func Run(args []string) error {
 		return errors.New("No arguments provided")
 	}
 
-	commands, err := GetCommands("./.kudasai.json")
-	if err == nil {
-		command, exists := commands[args[0]]
-		if exists {
-			err := Execute(command)
-			if err != nil {
-				return fmt.Errorf("Unexpected error: %s", err)
-			}
-			return nil
-		}
-	}
-
-	switch args[0] {
-	case "start":
-		err := Execute("echo \"sushi, kudasai\"")
-		if err != nil {
-			return fmt.Errorf("Unexpected error: %s", err)
-		}
-	case "help":
-		fmt.Println("Usage: kudasai [command]")
-	default:
+	commands := GetCommands("./.kudasai.json")
+	command, exists := commands[args[0]]
+	if !exists {
 		return fmt.Errorf("Unrecognized command: %s", args[0])
 	}
 
+	err := Execute(command)
+	if err != nil {
+		return fmt.Errorf("Unexpected error: %s", err)
+	}
 	return nil
+
 }
