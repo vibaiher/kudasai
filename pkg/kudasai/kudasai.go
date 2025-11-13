@@ -54,6 +54,7 @@ func Execute(command string) error {
 
 func Prepare(command string) *exec.Cmd {
 	cmd := exec.Command("sh", "-c", command)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir, _ = os.Getwd()
