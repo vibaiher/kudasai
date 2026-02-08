@@ -9,6 +9,12 @@ When you use ください with someone, you’re fundamentally telling them to d
 ## Installation
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/vibaiher/kudasai/main/install.sh | sh
+```
+
+Or, if you have Go installed:
+
+```bash
 go install github.com/vibaiher/kudasai
 ```
 

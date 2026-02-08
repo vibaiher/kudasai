@@ -1,0 +1,15 @@
+version: 2
+
+builds:
+  - main: ./main.go
+    binary: kudasai
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+    name_template: "kudasai_{{ .Os }}_{{ .Arch }}"
