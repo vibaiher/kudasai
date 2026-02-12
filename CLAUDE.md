@@ -17,7 +17,12 @@ go install                          # Install to $GOBIN or $HOME/go/bin
 ### Testing
 ```bash
 go test -v ./tests/...              # Run unit tests
-clitest examples/**                 # Run acceptance tests (requires clitest)
+go test -v -run TestRun_Help ./tests/...  # Run a single test by name
+```
+
+Acceptance tests require the binary to be installed first:
+```bash
+go install && clitest examples/**   # Run acceptance tests (requires clitest)
 ```
 
 ### Prerequisites

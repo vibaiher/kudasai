@@ -49,6 +49,37 @@ kudasai test
 kudasai deploy
 ```
 
+### Passing Arguments
+
+You can pass extra arguments to commands. By default, arguments are appended at the end:
+
+```bash
+kudasai test -run TestFoo
+# Executes: go test -v ./tests/... -run TestFoo
+```
+
+Use placeholders to control where arguments are inserted:
+
+- `$1`, `$2`, ..., `$N` — positional arguments
+- `$@` — all arguments
+
+```json
+{
+  "commands": {
+    "test": "go test $@ ./tests/...",
+    "greet": "echo hello $1, welcome to $2"
+  }
+}
+```
+
+```bash
+kudasai test -v -run Foo
+# Executes: go test -v -run Foo ./tests/...
+
+kudasai greet world earth
+# Executes: echo hello world, welcome to earth
+```
+
 ### Interactive Commands
 
 Commands support stdin, so you can use interactive tools:

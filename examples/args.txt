@@ -1,0 +1,7 @@
+$ echo '{"commands":{"greet": "echo hello $1, welcome to $2", "say": "echo $@", "ping": "echo pong"}}' > .kudasai.json
+$ kudasai greet world earth
+hello world, welcome to earth
+$ kudasai say foo bar baz
+foo bar baz
+$ kudasai ping extra args
+pong extra args
