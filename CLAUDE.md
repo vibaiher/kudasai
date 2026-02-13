@@ -20,9 +20,9 @@ go test -v ./tests/...              # Run unit tests
 go test -v -run TestRun_Help ./tests/...  # Run a single test by name
 ```
 
-Acceptance tests require the binary to be installed first:
+Acceptance tests:
 ```bash
-go install && clitest examples/**   # Run acceptance tests (requires clitest)
+kudasai acceptance                   # Run acceptance tests (requires clitest)
 ```
 
 ### Prerequisites
