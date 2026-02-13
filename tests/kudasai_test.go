@@ -21,10 +21,17 @@ func TestRun_Help(t *testing.T) {
 	}
 }
 
+func TestRun_HelpFlag(t *testing.T) {
+	err := kudasai.Run([]string{"--help"})
+	if err != nil {
+		t.Errorf("Did not expect an error when running --help")
+	}
+}
+
 func TestRun_Start(t *testing.T) {
 	err := kudasai.Run([]string{"start"})
 	if err != nil {
-		t.Errorf("Did not expect an error when running the help command")
+		t.Errorf("Did not expect an error when running the start command")
 	}
 }
 
@@ -32,6 +39,27 @@ func TestRun_InvalidCommand(t *testing.T) {
 	err := kudasai.Run([]string{"invalid"})
 	if err == nil {
 		t.Errorf("Expected an error for an unrecognized command")
+	}
+}
+
+func TestRun_Version(t *testing.T) {
+	err := kudasai.Run([]string{"--version"})
+	if err != nil {
+		t.Errorf("Did not expect an error when running --version")
+	}
+}
+
+func TestRun_VersionSubcommand(t *testing.T) {
+	err := kudasai.Run([]string{"version"})
+	if err != nil {
+		t.Errorf("Did not expect an error when running version")
+	}
+}
+
+func TestRun_JSON(t *testing.T) {
+	err := kudasai.Run([]string{"--json"})
+	if err != nil {
+		t.Errorf("Did not expect an error when running --json")
 	}
 }
 

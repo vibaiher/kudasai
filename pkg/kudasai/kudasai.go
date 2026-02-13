@@ -8,8 +8,11 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strings"
 )
+
+var Version = "dev"
 
 type Commands map[string]string
 type KudasaiConfig struct {
@@ -19,7 +22,7 @@ type KudasaiConfig struct {
 func KudasaiDefaultCommands() Commands {
 	return Commands{
 		"start": "echo \"sushi, kudasai\"",
-		"help":  "echo \"Usage: kudasai [command]\"",
+		"help":  "",
 	}
 }
 
@@ -30,21 +33,21 @@ func mergeMaps(map1, map2 map[string]string) map[string]string {
 	return map1
 }
 
-func GetCommands(filepath string) Commands {
+func GetCommands(filepath string) (Commands, bool) {
 	configFile, err := os.Open(filepath)
 	if err != nil {
-		return KudasaiDefaultCommands()
+		return KudasaiDefaultCommands(), false
 	}
 	defer configFile.Close()
 
 	content, err := io.ReadAll(configFile)
 	if err != nil {
-		return KudasaiDefaultCommands()
+		return KudasaiDefaultCommands(), false
 	}
 	var config KudasaiConfig
 	json.Unmarshal(content, &config)
 
-	return mergeMaps(KudasaiDefaultCommands(), config.Commands)
+	return mergeMaps(KudasaiDefaultCommands(), config.Commands), true
 }
 
 func ShellQuote(arg string) string {
@@ -110,12 +113,72 @@ func Prepare(command string) *exec.Cmd {
 	return cmd
 }
 
+func Help(commands Commands, configFound bool) {
+	fmt.Println("Usage: kudasai [command]")
+	fmt.Println()
+
+	if !configFound {
+		fmt.Println("Warning: no .kudasai.json found in current directory")
+		fmt.Println()
+		fmt.Println("Built-in commands:")
+	} else {
+		fmt.Println("Available commands:")
+	}
+
+	names := make([]string, 0, len(commands))
+	for name := range commands {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	for _, name := range names {
+		fmt.Printf("  %s\n", name)
+	}
+}
+
+func JSONOutput(commands Commands) error {
+	defaults := KudasaiDefaultCommands()
+
+	output := make(map[string]interface{})
+	cmds := make(map[string]interface{})
+
+	for name, cmd := range commands {
+		if _, isBuiltin := defaults[name]; isBuiltin {
+			cmds[name] = map[string]interface{}{"builtin": true}
+		} else {
+			cmds[name] = map[string]interface{}{"run": cmd}
+		}
+	}
+
+	output["commands"] = cmds
+
+	data, err := json.MarshalIndent(output, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
+	return nil
+}
+
 func Run(args []string) error {
 	if len(args) == 0 {
 		return errors.New("No arguments provided")
 	}
 
-	commands := GetCommands("./.kudasai.json")
+	switch args[0] {
+	case "--version", "version":
+		fmt.Printf("kudasai %s\n", Version)
+		return nil
+	case "--json":
+		commands, _ := GetCommands("./.kudasai.json")
+		return JSONOutput(commands)
+	case "help", "--help":
+		commands, configFound := GetCommands("./.kudasai.json")
+		Help(commands, configFound)
+		return nil
+	}
+
+	commands, _ := GetCommands("./.kudasai.json")
 	command, exists := commands[args[0]]
 	if !exists {
 		return fmt.Errorf("Unrecognized command: %s", args[0])

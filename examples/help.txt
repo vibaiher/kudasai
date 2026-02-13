@@ -1,2 +1,9 @@
+$ echo '{"commands":{"build": "go build", "test": "go test"}}' > .kudasai.json
 $ kudasai help
 Usage: kudasai [command]
+
+Available commands:
+  build
+  help
+  start
+  test
