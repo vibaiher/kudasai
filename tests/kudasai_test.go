@@ -265,7 +265,7 @@ func TestRun_Check(t *testing.T) {
 
 	os.WriteFile(".kudasai.json", []byte(`{"commands":{"build":"make","test":"make test"}}`), 0644)
 
-	err := kudasai.Run([]string{"check"})
+	err := kudasai.Run([]string{"--check"})
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -278,7 +278,7 @@ func TestRun_CheckMissing(t *testing.T) {
 	os.Chdir(dir)
 	defer os.Chdir(origDir)
 
-	err := kudasai.Run([]string{"check"})
+	err := kudasai.Run([]string{"--check"})
 	if err == nil {
 		t.Fatal("Expected error when .kudasai.json missing")
 	}
@@ -296,7 +296,7 @@ func TestRun_CheckInvalidJSON(t *testing.T) {
 
 	os.WriteFile(".kudasai.json", []byte(`{invalid`), 0644)
 
-	err := kudasai.Run([]string{"check"})
+	err := kudasai.Run([]string{"--check"})
 	if err == nil {
 		t.Fatal("Expected error for invalid JSON")
 	}

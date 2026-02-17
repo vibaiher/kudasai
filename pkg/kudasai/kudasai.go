@@ -284,8 +284,9 @@ func Run(args []string) error {
 		return errors.New("No arguments provided")
 	}
 
+	// Flags (--) always run built-in behavior
 	switch args[0] {
-	case "--version", "version":
+	case "--version":
 		fmt.Printf("kudasai %s\n", Version)
 		return nil
 	case "--json":
@@ -294,11 +295,43 @@ func Run(args []string) error {
 			return err
 		}
 		return JSONOutput(commands)
-	case "help", "--help":
+	case "--help":
 		commands, configFound, err := GetCommands("./.kudasai.json")
 		if err != nil {
 			return err
 		}
+		Help(commands, configFound)
+		return nil
+	case "--init":
+		force := len(args) > 1 && args[1] == "--force"
+		return Init(force)
+	case "--check":
+		return Check("./.kudasai.json")
+	}
+
+	// Subcommands: custom takes precedence over built-in
+	commands, configFound, err := GetCommands("./.kudasai.json")
+	if err != nil {
+		return err
+	}
+
+	defaults := KudasaiDefaultCommands()
+	command, exists := commands[args[0]]
+
+	// If the command exists and is not a built-in default (empty string), run it
+	if exists {
+		if _, isDefault := defaults[args[0]]; !isDefault || command != "" {
+			command = InterpolateArgs(command, args[1:])
+			return Execute(command)
+		}
+	}
+
+	// Fall back to built-in subcommands
+	switch args[0] {
+	case "version":
+		fmt.Printf("kudasai %s\n", Version)
+		return nil
+	case "help":
 		Help(commands, configFound)
 		return nil
 	case "init":
@@ -308,17 +341,6 @@ func Run(args []string) error {
 		return Check("./.kudasai.json")
 	}
 
-	commands, _, err := GetCommands("./.kudasai.json")
-	if err != nil {
-		return err
-	}
-	command, exists := commands[args[0]]
-	if !exists {
-		return fmt.Errorf("Unrecognized command: %s. Run `kudasai help` to see available commands", args[0])
-	}
-
-	command = InterpolateArgs(command, args[1:])
-
-	return Execute(command)
+	return fmt.Errorf("Unrecognized command: %s. Run `kudasai help` to see available commands", args[0])
 
 }
