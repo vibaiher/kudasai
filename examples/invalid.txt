@@ -1,2 +1,2 @@
 $ kudasai invalid
-Unrecognized command: invalid
+Unrecognized command: invalid. Run `kudasai help` to see available commands

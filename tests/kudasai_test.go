@@ -256,6 +256,55 @@ func TestRun_InitForce(t *testing.T) {
 	})
 }
 
+func TestRun_Check(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	os.WriteFile(".kudasai.json", []byte(`{"commands":{"build":"make","test":"make test"}}`), 0644)
+
+	err := kudasai.Run([]string{"check"})
+	if err != nil {
+		t.Fatalf("Expected no error, got %s", err)
+	}
+}
+
+func TestRun_CheckMissing(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	err := kudasai.Run([]string{"check"})
+	if err == nil {
+		t.Fatal("Expected error when .kudasai.json missing")
+	}
+	if !strings.Contains(err.Error(), "kudasai init") {
+		t.Errorf("Expected suggestion to run init, got: %s", err)
+	}
+}
+
+func TestRun_CheckInvalidJSON(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	os.WriteFile(".kudasai.json", []byte(`{invalid`), 0644)
+
+	err := kudasai.Run([]string{"check"})
+	if err == nil {
+		t.Fatal("Expected error for invalid JSON")
+	}
+	if !strings.Contains(err.Error(), "failed to parse") || !strings.Contains(err.Error(), "kudasai check") {
+		t.Errorf("Expected parse error with suggestion, got: %s", err)
+	}
+}
+
 func TestExecute_PropagatesExitCode(t *testing.T) {
 	err := kudasai.Execute("exit 42")
 	if err == nil {

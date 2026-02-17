@@ -4,6 +4,7 @@ Usage: kudasai [command]
 
 Available commands:
   build
+  check
   help
   init
   start

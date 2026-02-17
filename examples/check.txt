@@ -1,0 +1,3 @@
+$ echo '{"commands":{"build": "make", "test": "make test"}}' > .kudasai.json
+$ kudasai check
+.kudasai.json is valid (2 commands defined)

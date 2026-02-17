@@ -24,6 +24,7 @@ func KudasaiDefaultCommands() Commands {
 		"start": "echo \"sushi, kudasai\"",
 		"help":  "",
 		"init":  "",
+		"check": "",
 	}
 }
 
@@ -34,21 +35,45 @@ func mergeMaps(map1, map2 map[string]string) map[string]string {
 	return map1
 }
 
-func GetCommands(filepath string) (Commands, bool) {
+func GetCommands(filepath string) (Commands, bool, error) {
 	configFile, err := os.Open(filepath)
 	if err != nil {
-		return KudasaiDefaultCommands(), false
+		return KudasaiDefaultCommands(), false, nil
 	}
 	defer configFile.Close()
 
 	content, err := io.ReadAll(configFile)
 	if err != nil {
-		return KudasaiDefaultCommands(), false
+		return KudasaiDefaultCommands(), false, nil
 	}
 	var config KudasaiConfig
-	json.Unmarshal(content, &config)
+	if err := json.Unmarshal(content, &config); err != nil {
+		return nil, true, fmt.Errorf("failed to parse .kudasai.json: %s", err)
+	}
 
-	return mergeMaps(KudasaiDefaultCommands(), config.Commands), true
+	return mergeMaps(KudasaiDefaultCommands(), config.Commands), true, nil
+}
+
+func Check(filepath string) error {
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return fmt.Errorf(".kudasai.json not found in current directory. Run `kudasai init` to create one")
+	}
+
+	commands, _, err := GetCommands(filepath)
+	if err != nil {
+		return fmt.Errorf("%s. Fix the JSON syntax and run `kudasai check` again", err)
+	}
+
+	count := 0
+	defaults := KudasaiDefaultCommands()
+	for name := range commands {
+		if _, isBuiltin := defaults[name]; !isBuiltin {
+			count++
+		}
+	}
+
+	fmt.Printf(".kudasai.json is valid (%d commands defined)\n", count)
+	return nil
 }
 
 func ShellQuote(arg string) string {
@@ -264,21 +289,32 @@ func Run(args []string) error {
 		fmt.Printf("kudasai %s\n", Version)
 		return nil
 	case "--json":
-		commands, _ := GetCommands("./.kudasai.json")
+		commands, _, err := GetCommands("./.kudasai.json")
+		if err != nil {
+			return err
+		}
 		return JSONOutput(commands)
 	case "help", "--help":
-		commands, configFound := GetCommands("./.kudasai.json")
+		commands, configFound, err := GetCommands("./.kudasai.json")
+		if err != nil {
+			return err
+		}
 		Help(commands, configFound)
 		return nil
 	case "init":
 		force := len(args) > 1 && args[1] == "--force"
 		return Init(force)
+	case "check":
+		return Check("./.kudasai.json")
 	}
 
-	commands, _ := GetCommands("./.kudasai.json")
+	commands, _, err := GetCommands("./.kudasai.json")
+	if err != nil {
+		return err
+	}
 	command, exists := commands[args[0]]
 	if !exists {
-		return fmt.Errorf("Unrecognized command: %s", args[0])
+		return fmt.Errorf("Unrecognized command: %s. Run `kudasai help` to see available commands", args[0])
 	}
 
 	command = InterpolateArgs(command, args[1:])
