@@ -18,18 +18,15 @@ Or, if you have Go installed:
 go install github.com/vibaiher/kudasai
 ```
 
-## Usage
+## Getting Started
 
-### Default Commands
+Scaffold a `.kudasai.json` in your project:
 
 ```bash
-kudasai help  # Prints usage
-kudasai start # Prints a message
+kudasai --init
 ```
 
-### Custom Commands
-
-Create a `.kudasai.json` file in your project root to define custom commands:
+This detects your project type (Go, Node.js, Ruby, PHP, Python) and generates appropriate commands. You can also create the file manually:
 
 ```json
 {
@@ -41,13 +38,15 @@ Create a `.kudasai.json` file in your project root to define custom commands:
 }
 ```
 
-Then run your custom commands:
+Then run your commands:
 
 ```bash
 kudasai build
 kudasai test
 kudasai deploy
 ```
+
+## Usage
 
 ### Passing Arguments
 
@@ -93,7 +92,19 @@ Commands support stdin, so you can use interactive tools:
 }
 ```
 
-Custom commands take precedence over default commands if they share the same name.
+### Built-in Flags
+
+All built-in functionality is accessed via flags:
+
+| Flag | Description |
+|------|-------------|
+| `--help` | List available commands |
+| `--version` | Show kudasai version |
+| `--init` | Scaffold a `.kudasai.json` with project detection |
+| `--check` | Validate your `.kudasai.json` |
+| `--json` | Output commands as structured JSON |
+
+All other names are available for your custom commands.
 
 ## AI Agent Integration
 
