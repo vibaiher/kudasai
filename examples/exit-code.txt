@@ -1,0 +1,3 @@
+$ echo '{"commands":{"fail": "exit 42"}}' > .kudasai.json
+$ kudasai fail; echo $?
+42

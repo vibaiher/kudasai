@@ -1,7 +1,9 @@
 package tests
 
 import (
+	"errors"
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/vibaiher/kudasai/pkg/kudasai"
@@ -124,6 +126,22 @@ func TestInterpolateArgs_MissingPositionalArg(t *testing.T) {
 	expected := "echo 'hello' and "
 	if result != expected {
 		t.Errorf("Expected %q, got %q", expected, result)
+	}
+}
+
+func TestExecute_PropagatesExitCode(t *testing.T) {
+	err := kudasai.Execute("exit 42")
+	if err == nil {
+		t.Fatal("Expected an error for non-zero exit code")
+	}
+
+	var exitErr *exec.ExitError
+	if !errors.As(err, &exitErr) {
+		t.Fatalf("Expected exec.ExitError, got %T", err)
+	}
+
+	if exitErr.ExitCode() != 42 {
+		t.Errorf("Expected exit code 42, got %d", exitErr.ExitCode())
 	}
 }
 
