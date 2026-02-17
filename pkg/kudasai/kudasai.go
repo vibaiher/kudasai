@@ -23,6 +23,7 @@ func KudasaiDefaultCommands() Commands {
 	return Commands{
 		"start": "echo \"sushi, kudasai\"",
 		"help":  "",
+		"init":  "",
 	}
 }
 
@@ -160,6 +161,99 @@ func JSONOutput(commands Commands) error {
 	return nil
 }
 
+type ProjectDetection struct {
+	Name     string
+	File     string
+	Commands Commands
+}
+
+func DetectProject() *ProjectDetection {
+	detectors := []ProjectDetection{
+		{"Go", "go.mod", Commands{"build": "go build ./...", "start": "go run .", "test": "go test ./...", "lint": "go vet ./..."}},
+		{"Node.js", "package.json", Commands{"build": "npm run build", "start": "npm start", "test": "npm test", "lint": "npm run lint"}},
+		{"Ruby", "Gemfile", Commands{"build": "bundle exec rake build", "start": "bundle exec ruby app.rb", "test": "bundle exec rspec", "lint": "bundle exec rubocop"}},
+		{"PHP", "composer.json", Commands{"build": "composer install", "start": "php -S localhost:8000", "test": "./vendor/bin/phpunit", "lint": "./vendor/bin/phpcs"}},
+		{"Python", "pyproject.toml", Commands{"build": "pip install -e .", "start": "python -m app", "test": "pytest", "lint": "ruff check ."}},
+		{"Python", "requirements.txt", Commands{"build": "pip install -r requirements.txt", "start": "python -m app", "test": "pytest", "lint": "ruff check ."}},
+	}
+
+	for _, d := range detectors {
+		if _, err := os.Stat(d.File); err == nil {
+			return &d
+		}
+	}
+
+	return nil
+}
+
+var Stdin io.Reader = os.Stdin
+
+func Confirm(prompt string) bool {
+	fmt.Print(prompt)
+	var response string
+	fmt.Fscanln(Stdin, &response)
+	response = strings.ToLower(strings.TrimSpace(response))
+	return response == "" || response == "y" || response == "yes"
+}
+
+func Init(force bool) error {
+	configPath := ".kudasai.json"
+
+	if !force {
+		if _, err := os.Stat(configPath); err == nil {
+			return fmt.Errorf(".kudasai.json already exists (use --force to overwrite)")
+		}
+	}
+
+	detection := DetectProject()
+
+	var commands Commands
+	if detection != nil {
+		fmt.Printf("Detected %s project (%s)\n", detection.Name, detection.File)
+		commands = detection.Commands
+	} else {
+		fmt.Println("No project type detected")
+		commands = Commands{
+			"build": "echo 'Replace with your build command'",
+			"start": "echo 'Replace with your start command'",
+			"test":  "echo 'Replace with your test command'",
+			"lint":  "echo 'Replace with your lint command'",
+		}
+	}
+
+	fmt.Println()
+	fmt.Println("Commands:")
+
+	names := make([]string, 0, len(commands))
+	for name := range commands {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		fmt.Printf("  %s: %s\n", name, commands[name])
+	}
+
+	fmt.Println()
+	if !Confirm("Create .kudasai.json? [Y/n] ") {
+		fmt.Println("Aborted")
+		return nil
+	}
+
+	config := KudasaiConfig{Commands: commands}
+
+	data, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to generate .kudasai.json: %s", err)
+	}
+
+	if err := os.WriteFile(configPath, append(data, '\n'), 0644); err != nil {
+		return fmt.Errorf("failed to create .kudasai.json: %s", err)
+	}
+
+	fmt.Println("Created .kudasai.json")
+	return nil
+}
+
 func Run(args []string) error {
 	if len(args) == 0 {
 		return errors.New("No arguments provided")
@@ -176,6 +270,9 @@ func Run(args []string) error {
 		commands, configFound := GetCommands("./.kudasai.json")
 		Help(commands, configFound)
 		return nil
+	case "init":
+		force := len(args) > 1 && args[1] == "--force"
+		return Init(force)
 	}
 
 	commands, _ := GetCommands("./.kudasai.json")

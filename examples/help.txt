@@ -5,5 +5,6 @@ Usage: kudasai [command]
 Available commands:
   build
   help
+  init
   start
   test

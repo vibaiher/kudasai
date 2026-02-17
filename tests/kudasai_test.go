@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 
 	"github.com/vibaiher/kudasai/pkg/kudasai"
@@ -127,6 +128,132 @@ func TestInterpolateArgs_MissingPositionalArg(t *testing.T) {
 	if result != expected {
 		t.Errorf("Expected %q, got %q", expected, result)
 	}
+}
+
+func withFakeStdin(input string, fn func()) {
+	original := kudasai.Stdin
+	kudasai.Stdin = strings.NewReader(input)
+	defer func() { kudasai.Stdin = original }()
+	fn()
+}
+
+func TestRun_Init(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	withFakeStdin("y\n", func() {
+		err := kudasai.Run([]string{"init"})
+		if err != nil {
+			t.Fatalf("Expected no error, got %s", err)
+		}
+	})
+
+	content, err := os.ReadFile(".kudasai.json")
+	if err != nil {
+		t.Fatalf("Expected .kudasai.json to exist")
+	}
+
+	if !strings.Contains(string(content), "build") {
+		t.Errorf("Expected template to contain 'build' command")
+	}
+}
+
+func TestRun_InitDetectsGo(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	os.WriteFile("go.mod", []byte("module test"), 0644)
+
+	withFakeStdin("y\n", func() {
+		err := kudasai.Run([]string{"init"})
+		if err != nil {
+			t.Fatalf("Expected no error, got %s", err)
+		}
+	})
+
+	content, _ := os.ReadFile(".kudasai.json")
+	if !strings.Contains(string(content), "go build") {
+		t.Errorf("Expected Go commands, got %s", string(content))
+	}
+}
+
+func TestRun_InitDetectsNode(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	os.WriteFile("package.json", []byte("{}"), 0644)
+
+	withFakeStdin("y\n", func() {
+		err := kudasai.Run([]string{"init"})
+		if err != nil {
+			t.Fatalf("Expected no error, got %s", err)
+		}
+	})
+
+	content, _ := os.ReadFile(".kudasai.json")
+	if !strings.Contains(string(content), "npm test") {
+		t.Errorf("Expected Node commands, got %s", string(content))
+	}
+}
+
+func TestRun_InitAborted(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	withFakeStdin("n\n", func() {
+		err := kudasai.Run([]string{"init"})
+		if err != nil {
+			t.Fatalf("Expected no error, got %s", err)
+		}
+	})
+
+	if _, err := os.Stat(".kudasai.json"); err == nil {
+		t.Error("Expected .kudasai.json to NOT be created when user says no")
+	}
+}
+
+func TestRun_InitAlreadyExists(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	os.WriteFile(".kudasai.json", []byte("{}"), 0644)
+
+	err := kudasai.Run([]string{"init"})
+	if err == nil {
+		t.Fatal("Expected error when .kudasai.json already exists")
+	}
+}
+
+func TestRun_InitForce(t *testing.T) {
+	dir, _ := os.MkdirTemp("", "kudasai-test")
+	defer os.RemoveAll(dir)
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	os.WriteFile(".kudasai.json", []byte("{}"), 0644)
+
+	withFakeStdin("y\n", func() {
+		err := kudasai.Run([]string{"init", "--force"})
+		if err != nil {
+			t.Fatalf("Expected no error with --force, got %s", err)
+		}
+	})
 }
 
 func TestExecute_PropagatesExitCode(t *testing.T) {

@@ -1,0 +1,19 @@
+$ echo 'y' | kudasai init
+No project type detected
+
+Commands:
+  build: echo 'Replace with your build command'
+  lint: echo 'Replace with your lint command'
+  start: echo 'Replace with your start command'
+  test: echo 'Replace with your test command'
+
+Create .kudasai.json? [Y/n] Created .kudasai.json
+$ cat .kudasai.json
+{
+  "commands": {
+    "build": "echo 'Replace with your build command'",
+    "lint": "echo 'Replace with your lint command'",
+    "start": "echo 'Replace with your start command'",
+    "test": "echo 'Replace with your test command'"
+  }
+}
