@@ -186,10 +186,6 @@ func Run(args []string) error {
 
 	command = InterpolateArgs(command, args[1:])
 
-	err := Execute(command)
-	if err != nil {
-		return fmt.Errorf("Unexpected error: %s", err)
-	}
-	return nil
+	return Execute(command)
 
 }
