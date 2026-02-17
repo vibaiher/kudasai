@@ -18,13 +18,6 @@ func TestRun_NoArgs(t *testing.T) {
 }
 
 func TestRun_Help(t *testing.T) {
-	err := kudasai.Run([]string{"help"})
-	if err != nil {
-		t.Errorf("Did not expect an error when running the help command")
-	}
-}
-
-func TestRun_HelpFlag(t *testing.T) {
 	err := kudasai.Run([]string{"--help"})
 	if err != nil {
 		t.Errorf("Did not expect an error when running --help")
@@ -49,13 +42,6 @@ func TestRun_Version(t *testing.T) {
 	err := kudasai.Run([]string{"--version"})
 	if err != nil {
 		t.Errorf("Did not expect an error when running --version")
-	}
-}
-
-func TestRun_VersionSubcommand(t *testing.T) {
-	err := kudasai.Run([]string{"version"})
-	if err != nil {
-		t.Errorf("Did not expect an error when running version")
 	}
 }
 
@@ -145,7 +131,7 @@ func TestRun_Init(t *testing.T) {
 	defer os.Chdir(origDir)
 
 	withFakeStdin("y\n", func() {
-		err := kudasai.Run([]string{"init"})
+		err := kudasai.Run([]string{"--init"})
 		if err != nil {
 			t.Fatalf("Expected no error, got %s", err)
 		}
@@ -171,7 +157,7 @@ func TestRun_InitDetectsGo(t *testing.T) {
 	os.WriteFile("go.mod", []byte("module test"), 0644)
 
 	withFakeStdin("y\n", func() {
-		err := kudasai.Run([]string{"init"})
+		err := kudasai.Run([]string{"--init"})
 		if err != nil {
 			t.Fatalf("Expected no error, got %s", err)
 		}
@@ -193,7 +179,7 @@ func TestRun_InitDetectsNode(t *testing.T) {
 	os.WriteFile("package.json", []byte("{}"), 0644)
 
 	withFakeStdin("y\n", func() {
-		err := kudasai.Run([]string{"init"})
+		err := kudasai.Run([]string{"--init"})
 		if err != nil {
 			t.Fatalf("Expected no error, got %s", err)
 		}
@@ -213,7 +199,7 @@ func TestRun_InitAborted(t *testing.T) {
 	defer os.Chdir(origDir)
 
 	withFakeStdin("n\n", func() {
-		err := kudasai.Run([]string{"init"})
+		err := kudasai.Run([]string{"--init"})
 		if err != nil {
 			t.Fatalf("Expected no error, got %s", err)
 		}
@@ -233,7 +219,7 @@ func TestRun_InitAlreadyExists(t *testing.T) {
 
 	os.WriteFile(".kudasai.json", []byte("{}"), 0644)
 
-	err := kudasai.Run([]string{"init"})
+	err := kudasai.Run([]string{"--init"})
 	if err == nil {
 		t.Fatal("Expected error when .kudasai.json already exists")
 	}
@@ -249,7 +235,7 @@ func TestRun_InitForce(t *testing.T) {
 	os.WriteFile(".kudasai.json", []byte("{}"), 0644)
 
 	withFakeStdin("y\n", func() {
-		err := kudasai.Run([]string{"init", "--force"})
+		err := kudasai.Run([]string{"--init", "--force"})
 		if err != nil {
 			t.Fatalf("Expected no error with --force, got %s", err)
 		}

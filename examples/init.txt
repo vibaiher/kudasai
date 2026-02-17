@@ -1,4 +1,4 @@
-$ echo 'y' | kudasai init
+$ echo 'y' | kudasai --init
 No project type detected
 
 Commands:
