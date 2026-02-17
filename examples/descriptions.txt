@@ -1,0 +1,15 @@
+$ echo '{"commands":{"build": {"run": "echo building", "description": "Build the project"}, "test": {"run": "echo testing", "description": "Run tests"}, "deploy": "echo deploying"}}' > .kudasai.json
+$ kudasai --help
+Usage: kudasai [command]
+
+Available commands:
+  build   Build the project
+  deploy
+  start
+  test    Run tests
+$ kudasai build
+building
+$ kudasai test
+testing
+$ kudasai deploy
+deploying

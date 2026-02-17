@@ -2,54 +2,85 @@
 
 ## Prerequisites
 
-To get started with development, ensure you have the following installed:
-
-- **Go** version 1.23
+- **Go** 1.23 — [install](https://golang.org/doc/install)
+- **clitest** — [install](https://github.com/aureliojargas/clitest)
 
 ## Setup
 
-1. **Install Go 1.23:**
+```bash
+git clone https://github.com/vibaiher/kudasai.git
+cd kudasai
+go build -o kudasai main.go
+```
 
-   Follow the instructions on the [official Go website](https://golang.org/doc/install) to install Go 1.23.
+## Running Tests
 
-2. **Install `clitest`:**
+### Unit tests
 
-   Follow the instructions on the [official clitest homepage](https://github.com/aureliojargas/clitest) to install clitest.
+Located in `tests/kudasai_test.go`. They test the `Run()` function and helpers directly:
 
-## Running tests
+```bash
+go test -v ./tests/...
+```
 
-We have go unit tests but also a small acceptance test suite.
+### Acceptance tests
 
-1. **Running unit tests**
-  
-  They are placed in `./tests` folder, so please run:
+Located in `examples/*.txt`. Each file is a [clitest](https://github.com/aureliojargas/clitest) script that runs kudasai end-to-end and checks its output:
 
-  ```bash
-  go test -v ./tests/...
-  ```
+```bash
+bash scripts/acceptance.sh
+```
 
-2. **Running acceptance tests**
+The script builds a fresh binary, creates a temp directory for each test file, and runs it in isolation.
 
-  ```bash
-  clitest examples/**
-  ```
+### Test coverage by feature
 
-## Building kudasai
+| Feature | Unit test | Acceptance test |
+|---|---|---|
+| Run custom command | `TestRun_Start` | `custom.txt` |
+| Argument passing (`$1`, `$@`, append) | `TestInterpolateArgs_*` | `args.txt` |
+| `--help` | `TestRun_Help` | `help.txt` |
+| `--help` with descriptions | — | `descriptions.txt` |
+| `--version` | `TestRun_Version` | `version.txt` |
+| `--json` (with descriptions) | `TestRun_JSON` | `json.txt` |
+| `--init` (project detection, confirm) | `TestRun_Init*` | `init.txt` |
+| `--check` (validation) | `TestRun_Check*` | `check.txt` |
+| Unrecognized command error | `TestRun_InvalidCommand` | `invalid.txt` |
+| Exit code propagation | `TestExecute_PropagatesExitCode` | `exit-code.txt` |
+| String and object command formats | — | `descriptions.txt` |
+| Shell quoting | `TestShellQuote_*` | — |
 
-To build a working kudasai binary, you have several alternatives.
+### Adding a new acceptance test
 
-1. **Build the code locally**
+Create a file in `examples/` following the clitest format:
 
-  This will generate a binary in the root folder of the project.
+```
+$ echo '{"commands":{"hello": "echo world"}}' > .kudasai.json
+$ kudasai hello
+world
+```
 
-  ```bash
-  go build -o kudasai main.go
-  ```
+Lines starting with `$` are commands; the lines that follow are expected output. Each test file runs in its own temporary directory.
 
-2. **Install the package**
+## Building
 
-  This will generate a binary in your `$GOBIN` folder, or in `$HOME/go/bin` by default.
+```bash
+go build -o kudasai main.go
+```
 
-  ```bash
-  go install
-  ```
+This generates a binary in the project root. Alternatively, install to your `$GOBIN`:
+
+```bash
+go install
+```
+
+## Project Structure
+
+```
+main.go                  Entry point, delegates to pkg/kudasai
+pkg/kudasai/kudasai.go   All core logic (commands, config, help, init, etc.)
+tests/kudasai_test.go    Unit tests
+examples/*.txt           Acceptance tests (clitest format)
+scripts/acceptance.sh    Acceptance test runner
+.kudasai.json            This project's own commands (dogfooding)
+```

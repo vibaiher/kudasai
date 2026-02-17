@@ -1,0 +1,16 @@
+$ echo '{"commands":{"build": "make", "test": {"run": "make test", "description": "Run tests"}}}' > .kudasai.json
+$ kudasai --json
+{
+  "commands": {
+    "build": {
+      "run": "make"
+    },
+    "start": {
+      "builtin": true
+    },
+    "test": {
+      "description": "Run tests",
+      "run": "make test"
+    }
+  }
+}

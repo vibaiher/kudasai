@@ -36,18 +36,36 @@ Run `kudasai --json` to discover available commands in this repository. Use `kud
 
 ### Configuration Format
 
-`.kudasai.json` structure:
+`.kudasai.json` supports two command formats:
+
+String form (shell command only):
 ```json
 {
   "commands": {
-    "command-name": "shell command to execute"
+    "deploy": "git push origin main"
   }
 }
 ```
 
+Object form (with description):
+```json
+{
+  "commands": {
+    "build": {
+      "run": "go build -o kudasai main.go",
+      "description": "Build the binary"
+    }
+  }
+}
+```
+
+Both forms can be mixed in the same file.
+
 ## Testing Strategy
 
-- **Unit tests** (tests/kudasai_test.go): Test the `Run()` function with various inputs
-- **Acceptance tests** (examples/*.txt): Use clitest to verify CLI behavior end-to-end
+- **Unit tests** (`tests/kudasai_test.go`): Test the `Run()` function with various inputs
+- **Acceptance tests** (`examples/*.txt`): Use clitest to verify CLI behavior end-to-end
+
+Every important feature should have both unit tests and an acceptance test. See the coverage table in `DEVELOPMENT.md`.
 
 The project's own `.kudasai.json` defines the development commands. Run `kudasai --json` to see them.

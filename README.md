@@ -2,9 +2,9 @@
 
 `kudasai` is a tool for generating aliases for the most frequently used commands in your repository and sharing them with your team.
 
-ください (kudasai) it's a Japanese word. Fundamentally, is the polite form of the imperative form.
+ ください (kudasai) it's a Japanese word. Fundamentally, is the polite form of the imperative form.
 
-When you use ください with someone, you’re fundamentally telling them to do something. Is close in meaning to the English "please".
+When you use ください with someone, you're fundamentally telling them to do something. Is close in meaning to the English "please".
 
 ## Installation
 
@@ -31,8 +31,14 @@ This detects your project type (Go, Node.js, Ruby, PHP, Python) and generates ap
 ```json
 {
   "commands": {
-    "build": "go build -o kudasai main.go",
-    "test": "go test -v ./tests/...",
+    "build": {
+      "run": "go build -o myapp main.go",
+      "description": "Build the binary"
+    },
+    "test": {
+      "run": "go test -v ./tests/...",
+      "description": "Run unit tests"
+    },
     "deploy": "git push origin main"
   }
 }
@@ -47,6 +53,35 @@ kudasai deploy
 ```
 
 ## Usage
+
+### Command Format
+
+Commands can be defined in two ways:
+
+**String form** (just the shell command):
+
+```json
+{
+  "commands": {
+    "deploy": "git push origin main"
+  }
+}
+```
+
+**Object form** (with description):
+
+```json
+{
+  "commands": {
+    "deploy": {
+      "run": "git push origin main",
+      "description": "Deploy to production"
+    }
+  }
+}
+```
+
+Both forms can be mixed in the same file. Descriptions appear in `--help` and `--json` output.
 
 ### Passing Arguments
 
@@ -114,13 +149,28 @@ AI coding agents (Claude Code, Cursor, Copilot, etc.) can discover your project 
 Run `kudasai --json` to discover available commands in this repository. Use `kudasai <command>` to execute them.
 ```
 
-You can also use `kudasai --json` programmatically to get structured output:
+The `--json` flag outputs structured data that includes descriptions when available:
 
 ```bash
 kudasai --json
 ```
 
+```json
+{
+  "commands": {
+    "build": {
+      "run": "go build -o kudasai main.go",
+      "description": "Build the binary"
+    },
+    "test": {
+      "run": "go test -v ./tests/...",
+      "description": "Run unit tests"
+    }
+  }
+}
+```
+
 ## Contributing
 
-Once you’ve cloned the repo and [set up the environment](DEVELOPMENT.md),
+Once you've cloned the repo and [set up the environment](DEVELOPMENT.md),
 you can run the unit tests and acceptance suite, or submit a pull request.
