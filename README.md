@@ -95,6 +95,20 @@ Commands support stdin, so you can use interactive tools:
 
 Custom commands take precedence over default commands if they share the same name.
 
+## AI Agent Integration
+
+AI coding agents (Claude Code, Cursor, Copilot, etc.) can discover your project commands automatically. Add this to your agent context file (`CLAUDE.md`, `.cursorrules`, etc.):
+
+```markdown
+Run `kudasai --json` to discover available commands in this repository. Use `kudasai <command>` to execute them.
+```
+
+You can also use `kudasai --json` programmatically to get structured output:
+
+```bash
+kudasai --json
+```
+
 ## Contributing
 
 Once you’ve cloned the repo and [set up the environment](DEVELOPMENT.md),

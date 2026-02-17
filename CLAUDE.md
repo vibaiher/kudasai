@@ -8,22 +8,7 @@ Kudasai is a Go-based CLI tool for generating aliases for frequently used comman
 
 ## Development Commands
 
-### Building
-```bash
-go build -o kudasai main.go        # Build binary to ./kudasai
-go install                          # Install to $GOBIN or $HOME/go/bin
-```
-
-### Testing
-```bash
-go test -v ./tests/...              # Run unit tests
-go test -v -run TestRun_Help ./tests/...  # Run a single test by name
-```
-
-Acceptance tests:
-```bash
-kudasai acceptance                   # Run acceptance tests (requires clitest)
-```
+Run `kudasai --json` to discover available commands in this repository. Use `kudasai <command>` to execute them.
 
 ### Prerequisites
 - Go 1.23
@@ -65,6 +50,4 @@ kudasai acceptance                   # Run acceptance tests (requires clitest)
 - **Unit tests** (tests/kudasai_test.go): Test the `Run()` function with various inputs
 - **Acceptance tests** (examples/*.txt): Use clitest to verify CLI behavior end-to-end
 
-The project's own `.kudasai.json` defines:
-- `build`: Builds the binary
-- `test`: Runs unit tests
+The project's own `.kudasai.json` defines the development commands. Run `kudasai --json` to see them.
