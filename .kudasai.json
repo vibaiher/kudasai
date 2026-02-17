@@ -1,7 +1,16 @@
 {
     "commands": {
-        "build": "go build -o kudasai main.go",
-        "test": "go test -v ./tests/...",
-        "acceptance": "bash scripts/acceptance.sh"
+        "build": {
+            "run": "go build -o kudasai main.go",
+            "description": "Build the binary"
+        },
+        "test": {
+            "run": "go test -v ./tests/...",
+            "description": "Run unit tests"
+        },
+        "acceptance": {
+            "run": "bash scripts/acceptance.sh",
+            "description": "Run acceptance tests"
+        }
     }
 }

@@ -14,18 +14,39 @@ import (
 
 var Version = "dev"
 
-type Commands map[string]string
+type Command struct {
+	Run         string `json:"run"`
+	Description string `json:"description,omitempty"`
+}
+
+func (c *Command) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err == nil {
+		c.Run = s
+		return nil
+	}
+
+	type commandAlias Command
+	var alias commandAlias
+	if err := json.Unmarshal(data, &alias); err != nil {
+		return err
+	}
+	*c = Command(alias)
+	return nil
+}
+
+type Commands map[string]Command
 type KudasaiConfig struct {
 	Commands Commands `json:"commands"`
 }
 
 func KudasaiDefaultCommands() Commands {
 	return Commands{
-		"start": "echo \"sushi, kudasai\"",
+		"start": {Run: "echo \"sushi, kudasai\""},
 	}
 }
 
-func mergeMaps(map1, map2 map[string]string) map[string]string {
+func mergeMaps(map1, map2 Commands) Commands {
 	for key, value := range map2 {
 		map1[key] = value
 	}
@@ -154,8 +175,20 @@ func Help(commands Commands, configFound bool) {
 	}
 	sort.Strings(names)
 
+	maxLen := 0
 	for _, name := range names {
-		fmt.Printf("  %s\n", name)
+		if len(name) > maxLen {
+			maxLen = len(name)
+		}
+	}
+
+	for _, name := range names {
+		desc := commands[name].Description
+		if desc != "" {
+			fmt.Printf("  %-*s  %s\n", maxLen, name, desc)
+		} else {
+			fmt.Printf("  %s\n", name)
+		}
 	}
 }
 
@@ -169,7 +202,11 @@ func JSONOutput(commands Commands) error {
 		if _, isBuiltin := defaults[name]; isBuiltin {
 			cmds[name] = map[string]interface{}{"builtin": true}
 		} else {
-			cmds[name] = map[string]interface{}{"run": cmd}
+			entry := map[string]interface{}{"run": cmd.Run}
+			if cmd.Description != "" {
+				entry["description"] = cmd.Description
+			}
+			cmds[name] = entry
 		}
 	}
 
@@ -191,12 +228,42 @@ type ProjectDetection struct {
 
 func DetectProject() *ProjectDetection {
 	detectors := []ProjectDetection{
-		{"Go", "go.mod", Commands{"build": "go build ./...", "start": "go run .", "test": "go test ./...", "lint": "go vet ./..."}},
-		{"Node.js", "package.json", Commands{"build": "npm run build", "start": "npm start", "test": "npm test", "lint": "npm run lint"}},
-		{"Ruby", "Gemfile", Commands{"build": "bundle exec rake build", "start": "bundle exec ruby app.rb", "test": "bundle exec rspec", "lint": "bundle exec rubocop"}},
-		{"PHP", "composer.json", Commands{"build": "composer install", "start": "php -S localhost:8000", "test": "./vendor/bin/phpunit", "lint": "./vendor/bin/phpcs"}},
-		{"Python", "pyproject.toml", Commands{"build": "pip install -e .", "start": "python -m app", "test": "pytest", "lint": "ruff check ."}},
-		{"Python", "requirements.txt", Commands{"build": "pip install -r requirements.txt", "start": "python -m app", "test": "pytest", "lint": "ruff check ."}},
+		{"Go", "go.mod", Commands{
+			"build": {Run: "go build ./...", Description: "Build the project"},
+			"start": {Run: "go run .", Description: "Start the application"},
+			"test":  {Run: "go test ./...", Description: "Run tests"},
+			"lint":  {Run: "go vet ./...", Description: "Run linter"},
+		}},
+		{"Node.js", "package.json", Commands{
+			"build": {Run: "npm run build", Description: "Build the project"},
+			"start": {Run: "npm start", Description: "Start the application"},
+			"test":  {Run: "npm test", Description: "Run tests"},
+			"lint":  {Run: "npm run lint", Description: "Run linter"},
+		}},
+		{"Ruby", "Gemfile", Commands{
+			"build": {Run: "bundle exec rake build", Description: "Build the project"},
+			"start": {Run: "bundle exec ruby app.rb", Description: "Start the application"},
+			"test":  {Run: "bundle exec rspec", Description: "Run tests"},
+			"lint":  {Run: "bundle exec rubocop", Description: "Run linter"},
+		}},
+		{"PHP", "composer.json", Commands{
+			"build": {Run: "composer install", Description: "Build the project"},
+			"start": {Run: "php -S localhost:8000", Description: "Start the application"},
+			"test":  {Run: "./vendor/bin/phpunit", Description: "Run tests"},
+			"lint":  {Run: "./vendor/bin/phpcs", Description: "Run linter"},
+		}},
+		{"Python", "pyproject.toml", Commands{
+			"build": {Run: "pip install -e .", Description: "Build the project"},
+			"start": {Run: "python -m app", Description: "Start the application"},
+			"test":  {Run: "pytest", Description: "Run tests"},
+			"lint":  {Run: "ruff check .", Description: "Run linter"},
+		}},
+		{"Python", "requirements.txt", Commands{
+			"build": {Run: "pip install -r requirements.txt", Description: "Build the project"},
+			"start": {Run: "python -m app", Description: "Start the application"},
+			"test":  {Run: "pytest", Description: "Run tests"},
+			"lint":  {Run: "ruff check .", Description: "Run linter"},
+		}},
 	}
 
 	for _, d := range detectors {
@@ -236,10 +303,10 @@ func Init(force bool) error {
 	} else {
 		fmt.Println("No project type detected")
 		commands = Commands{
-			"build": "echo 'Replace with your build command'",
-			"start": "echo 'Replace with your start command'",
-			"test":  "echo 'Replace with your test command'",
-			"lint":  "echo 'Replace with your lint command'",
+			"build": {Run: "echo 'Replace with your build command'", Description: "Build the project"},
+			"start": {Run: "echo 'Replace with your start command'", Description: "Start the application"},
+			"test":  {Run: "echo 'Replace with your test command'", Description: "Run tests"},
+			"lint":  {Run: "echo 'Replace with your lint command'", Description: "Run linter"},
 		}
 	}
 
@@ -251,8 +318,21 @@ func Init(force bool) error {
 		names = append(names, name)
 	}
 	sort.Strings(names)
+
+	maxLen := 0
 	for _, name := range names {
-		fmt.Printf("  %s: %s\n", name, commands[name])
+		if len(name) > maxLen {
+			maxLen = len(name)
+		}
+	}
+
+	for _, name := range names {
+		cmd := commands[name]
+		if cmd.Description != "" {
+			fmt.Printf("  %-*s  %s (%s)\n", maxLen, name, cmd.Description, cmd.Run)
+		} else {
+			fmt.Printf("  %s: %s\n", name, cmd.Run)
+		}
 	}
 
 	fmt.Println()
@@ -315,7 +395,7 @@ func Run(args []string) error {
 		return fmt.Errorf("Unrecognized command: %s. Run `kudasai --help` to see available commands", args[0])
 	}
 
-	command = InterpolateArgs(command, args[1:])
-	return Execute(command)
+	run := InterpolateArgs(command.Run, args[1:])
+	return Execute(run)
 
 }

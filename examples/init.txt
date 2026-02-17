@@ -2,18 +2,30 @@ $ echo 'y' | kudasai --init
 No project type detected
 
 Commands:
-  build: echo 'Replace with your build command'
-  lint: echo 'Replace with your lint command'
-  start: echo 'Replace with your start command'
-  test: echo 'Replace with your test command'
+  build  Build the project (echo 'Replace with your build command')
+  lint   Run linter (echo 'Replace with your lint command')
+  start  Start the application (echo 'Replace with your start command')
+  test   Run tests (echo 'Replace with your test command')
 
 Create .kudasai.json? [Y/n] Created .kudasai.json
 $ cat .kudasai.json
 {
   "commands": {
-    "build": "echo 'Replace with your build command'",
-    "lint": "echo 'Replace with your lint command'",
-    "start": "echo 'Replace with your start command'",
-    "test": "echo 'Replace with your test command'"
+    "build": {
+      "run": "echo 'Replace with your build command'",
+      "description": "Build the project"
+    },
+    "lint": {
+      "run": "echo 'Replace with your lint command'",
+      "description": "Run linter"
+    },
+    "start": {
+      "run": "echo 'Replace with your start command'",
+      "description": "Start the application"
+    },
+    "test": {
+      "run": "echo 'Replace with your test command'",
+      "description": "Run tests"
+    }
   }
 }
