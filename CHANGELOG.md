@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0
+
+### Added
+- Command descriptions: commands can now use an object form with `run` and `description` fields. Descriptions appear in `--help` and `--json` output.
+- `kudasai --init` scaffolds `.kudasai.json` with project detection (Go, Node.js, Ruby, PHP, Python).
+- `kudasai --check` validates `.kudasai.json` syntax.
+- `kudasai --version` shows the current version.
+- `kudasai --json` outputs commands as structured JSON for AI agent integration.
+- `AGENTS.md` symlink to `CLAUDE.md`.
+
+### Changed
+- Built-in functionality is now accessed exclusively via flags (`--help`, `--init`, etc.), freeing all other names for custom commands.
+- Custom commands can override the built-in `start` command.
+- Exit codes from executed commands are now propagated correctly.
+
 ## 0.1.0
 
 ### Added
