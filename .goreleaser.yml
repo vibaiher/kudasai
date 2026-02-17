@@ -3,6 +3,8 @@ version: 2
 builds:
   - main: ./main.go
     binary: kudasai
+    ldflags:
+      - -s -w -X github.com/vibaiher/kudasai/pkg/kudasai.Version={{.Version}}
     goos:
       - linux
       - darwin
