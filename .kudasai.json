@@ -1,6 +1,7 @@
 {
     "commands": {
         "build": "go build -o kudasai main.go",
-        "test": "go test -v ./tests/..."
+        "test": "go test -v ./tests/...",
+        "acceptance": "bash scripts/acceptance.sh"
     }
 }

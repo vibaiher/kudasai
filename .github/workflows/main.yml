@@ -31,7 +31,6 @@ jobs:
       run: |
         curl -sOL https://raw.githubusercontent.com/aureliojargas/clitest/master/clitest
         chmod +x clitest
-    - name: Install kudasai binary
-      run: go install
-    - name: Run acceptance test
-      run: ./clitest examples/**
+        sudo mv clitest /usr/local/bin/
+    - name: Run acceptance tests
+      run: bash scripts/acceptance.sh
