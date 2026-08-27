@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kudasai — shared command aliases for your repo</title>
+<meta name="description" content="kudasai turns the commands your team actually runs into short, shared aliases. One .kudasai.json file in your repository, no runtime, no dependencies.">
+<link rel="canonical" href="https://vibaiher.github.io/kudasai/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="kudasai — shared command aliases for your repo">
+<meta property="og:description" content="Define your team's commands once in .kudasai.json. Run them anywhere with kudasai <command>.">
+<meta property="og:url" content="https://vibaiher.github.io/kudasai/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23D4453A'/><text x='16' y='23' font-size='20' font-family='monospace' font-weight='700' fill='%23EFEFE9' text-anchor='middle'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500&display=swap&text=%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%83%93%E3%83%AB%E3%83%89%E4%B8%8B" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <a class="wordmark" href="/kudasai/">
+    <span class="seal" aria-hidden="true">下</span>
+    <span class="wordmark__text">kudasai</span>
+  </a>
+  <nav class="topbar__links">
+    <a href="llms.txt">llms.txt</a>
+    <a href="https://github.com/vibaiher/kudasai">GitHub</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero__inner">
+
+    <div class="gloss" role="img" aria-label="The command 'kudasai build' glossed word by word: kudasai means please, build is the command you want. Together: build, please.">
+      <span class="gloss__latin g1">kudasai</span>
+      <span class="gloss__latin g2">build</span>
+      <span class="gloss__jp g1" aria-hidden="true">ください</span>
+      <span class="gloss__jp g2" aria-hidden="true">ビルド</span>
+      <span class="gloss__tag g1">please</span>
+      <span class="gloss__tag g2">the thing you want</span>
+      <span class="gloss__rule g3" aria-hidden="true"></span>
+      <span class="gloss__reading g3">&ldquo;build, please&rdquo;</span>
+    </div>
+
+    <div class="hero__pitch">
+      <p class="lede">
+        Every repo accumulates commands nobody remembers. kudasai puts them in one
+        file, gives each a short name, and makes them the same for everyone on the team.
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#install">Install it</a>
+        <a class="btn" href="#start">Read the guide</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="shell">
+
+  <nav class="toc" aria-label="Contents">
+    <p class="toc__title">Contents</p>
+    <ol>
+      <li><a href="#what">What it is</a></li>
+      <li><a href="#install">Installation</a></li>
+      <li><a href="#start">Getting started</a></li>
+      <li><a href="#format">Command format</a></li>
+      <li><a href="#args">Passing arguments</a></li>
+      <li><a href="#interactive">Interactive commands</a></li>
+      <li><a href="#flags">Built-in flags</a></li>
+      <li><a href="#agents">AI agents</a></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+
+    <section id="what">
+      <h2>What it is</h2>
+      <p>
+        kudasai is a small Go binary that reads a <code>.kudasai.json</code> file from the
+        current directory and runs the command you ask for. That is the whole tool.
+      </p>
+      <p>
+        The file lives in the repository, so the commands travel with the code. A new
+        teammate runs <code>kudasai test</code> on day one without asking anyone which
+        flags this project needs. When the build command changes, it changes in one place.
+      </p>
+      <p>
+        There is no runtime to install, no plugin system and no daemon. Commands run
+        through <code>sh -c</code> in your working directory, with stdin, stdout and
+        stderr wired straight to your terminal, and the exit code passed back to your shell.
+      </p>
+    </section>
+
+    <section id="install">
+      <h2>Installation</h2>
+      <p>Download the binary for your platform:</p>
+      <pre><code>curl -fsSL https://raw.githubusercontent.com/vibaiher/kudasai/main/install.sh | sh</code></pre>
+      <p>Or, with Go already on your machine:</p>
+      <pre><code>go install github.com/vibaiher/kudasai@latest</code></pre>
+      <p>Builds are published for Linux and macOS, on both amd64 and arm64.</p>
+    </section>
+
+    <section id="start">
+      <h2>Getting started</h2>
+      <p>Scaffold a config in your project:</p>
+      <pre><code>kudasai --init</code></pre>
+      <p>
+        kudasai looks for a marker file to work out what kind of project it is
+        &mdash; <code>go.mod</code>, <code>package.json</code>, <code>Gemfile</code>,
+        <code>composer.json</code>, <code>pyproject.toml</code> or
+        <code>requirements.txt</code> &mdash; and proposes <code>build</code>,
+        <code>start</code>, <code>test</code> and <code>lint</code> for it. It shows you
+        the file first and asks before writing.
+      </p>
+      <p>You can also write it by hand:</p>
+<pre><code>{
+  "commands": {
+    "build": {
+      "run": "go build -o myapp main.go",
+      "description": "Build the binary"
+    },
+    "test": {
+      "run": "go test -v ./tests/...",
+      "description": "Run unit tests"
+    },
+    "deploy": "git push origin main"
+  }
+}</code></pre>
+      <p>Then ask for what you want:</p>
+      <pre><code>kudasai build
+kudasai test
+kudasai deploy</code></pre>
+    </section>
+
+    <section id="format">
+      <h2>Command format</h2>
+      <p>A command can be written two ways.</p>
+      <p><strong>As a string</strong>, when the name says enough:</p>
+<pre><code>{
+  "commands": {
+    "deploy": "git push origin main"
+  }
+}</code></pre>
+      <p><strong>As an object</strong>, when you want a description:</p>
+<pre><code>{
+  "commands": {
+    "deploy": {
+      "run": "git push origin main",
+      "description": "Deploy to production"
+    }
+  }
+}</code></pre>
+      <p>
+        Both forms mix freely in the same file. Descriptions show up in
+        <code>--help</code> and <code>--json</code>, which is where they earn their keep:
+        they are how a teammate, or an agent, finds out what <code>deploy</code> actually
+        does without reading the shell command.
+      </p>
+    </section>
+
+    <section id="args">
+      <h2>Passing arguments</h2>
+      <p>Anything you type after the command name is passed through. By default it lands at the end:</p>
+<pre><code>$ kudasai test -run TestFoo
+<span class="c">→ go test -v ./tests/... -run TestFoo</span></code></pre>
+      <p>Use placeholders when the end is the wrong place:</p>
+      <dl class="defs">
+        <dt><code>$1</code>, <code>$2</code>, <code>$N</code></dt>
+        <dd>a single positional argument</dd>
+        <dt><code>$@</code></dt>
+        <dd>every argument, in order</dd>
+      </dl>
+<pre><code>{
+  "commands": {
+    "test": "go test $@ ./tests/...",
+    "greet": "echo hello $1, welcome to $2"
+  }
+}</code></pre>
+<pre><code>$ kudasai test -v -run Foo
+<span class="c">→ go test -v -run Foo ./tests/...</span>
+
+$ kudasai greet world earth
+<span class="c">→ echo hello world, welcome to earth</span></code></pre>
+      <p>
+        Arguments are shell-quoted before they are substituted, so paths with spaces and
+        strings with quotes survive the trip intact. A placeholder with no matching
+        argument resolves to nothing.
+      </p>
+    </section>
+
+    <section id="interactive">
+      <h2>Interactive commands</h2>
+      <p>
+        stdin is connected, so commands that expect a human still work. An editor opens,
+        a prompt waits, a pager pages.
+      </p>
+<pre><code>{
+  "commands": {
+    "commit": "git add . &amp;&amp; git commit",
+    "console": "bundle exec rails console"
+  }
+}</code></pre>
+    </section>
+
+    <section id="flags">
+      <h2>Built-in flags</h2>
+      <p>
+        Everything kudasai does itself is behind a <code>--</code> flag. Every other name
+        is yours, including <code>help</code>, <code>init</code> and <code>check</code>
+        if you want them.
+      </p>
+      <table class="flags">
+        <thead>
+          <tr><th>Flag</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--help</code></td><td>List the commands available here, with their descriptions</td></tr>
+          <tr><td><code>--version</code></td><td>Print the installed version</td></tr>
+          <tr><td><code>--init</code></td><td>Scaffold a <code>.kudasai.json</code>, detecting the project type</td></tr>
+          <tr><td><code>--init --force</code></td><td>Scaffold over an existing <code>.kudasai.json</code></td></tr>
+          <tr><td><code>--check</code></td><td>Validate the config and count the commands in it</td></tr>
+          <tr><td><code>--json</code></td><td>Print the commands as structured JSON</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="agents">
+      <h2>AI agents</h2>
+      <p>
+        A coding agent dropped into an unfamiliar repository has to guess how to build and
+        test it. <code>--json</code> removes the guessing: one command, and it has the
+        list.
+      </p>
+      <p>Add a line to your agent context file &mdash; <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>.cursorrules</code>:</p>
+<pre><code>Run `kudasai --json` to discover available commands in this
+repository. Use `kudasai &lt;command&gt;` to execute them.</code></pre>
+      <p>That is all the setup. The output looks like this:</p>
+<pre><code>$ kudasai --json
+{
+  "commands": {
+    "build": {
+      "run": "go build -o kudasai main.go",
+      "description": "Build the binary"
+    },
+    "test": {
+      "run": "go test -v ./tests/...",
+      "description": "Run unit tests"
+    },
+    "start": {
+      "builtin": true
+    }
+  }
+}</code></pre>
+      <p>
+        Descriptions are worth writing for this reason alone. They are the difference
+        between an agent knowing that <code>acceptance</code> exists and knowing when to
+        reach for it.
+      </p>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <p class="foot__mark"><span class="seal" aria-hidden="true">下</span> kudasai</p>
+    <p class="foot__note">
+      Free software under the GPL.
+      <a href="https://github.com/vibaiher/kudasai">Source</a> ·
+      <a href="https://github.com/vibaiher/kudasai/blob/main/CHANGELOG.md">Changelog</a> ·
+      <a href="https://github.com/vibaiher/kudasai/blob/main/DEVELOPMENT.md">Contributing</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

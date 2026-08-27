@@ -6,6 +6,8 @@
 
 When you use ください with someone, you're fundamentally telling them to do something. Is close in meaning to the English "please".
 
+Full documentation: **https://vibaiher.github.io/kudasai/**
+
 ## Installation
 
 ```bash

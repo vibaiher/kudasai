@@ -1,0 +1,104 @@
+# kudasai
+
+> kudasai is a small Go CLI that reads a `.kudasai.json` file from the current
+> directory and runs the command you name. It gives a team one shared, versioned
+> place to define the commands a repository actually needs, so `kudasai test`
+> means the same thing for everyone who checks the code out.
+
+Homepage: https://vibaiher.github.io/kudasai/
+Source: https://github.com/vibaiher/kudasai
+License: GPL
+
+The name is Japanese: ください (kudasai) is the polite imperative, roughly
+"please". `kudasai build` reads as "build, please".
+
+## Installation
+
+    curl -fsSL https://raw.githubusercontent.com/vibaiher/kudasai/main/install.sh | sh
+
+or, with Go installed:
+
+    go install github.com/vibaiher/kudasai@latest
+
+Binaries are published for linux and darwin, on amd64 and arm64.
+
+## Configuration
+
+kudasai reads `.kudasai.json` from the current working directory. Commands are
+defined under a top-level `commands` object, in either of two forms, which may
+be mixed in the same file:
+
+    {
+      "commands": {
+        "deploy": "git push origin main",
+        "test": {
+          "run": "go test -v ./tests/...",
+          "description": "Run unit tests"
+        }
+      }
+    }
+
+The string form is the shell command. The object form takes `run` (required)
+and `description` (optional). Descriptions appear in `--help` and `--json`.
+
+There is one built-in command, `start`. A custom command of the same name
+overrides it.
+
+## Execution model
+
+The command string is passed to `sh -c` and runs in the current working
+directory. Stdin, stdout and stderr are connected to the terminal, so
+interactive commands work. The exit code of the executed command is propagated
+to the caller.
+
+## Passing arguments
+
+Arguments given after the command name are shell-quoted and substituted.
+
+- If the command string contains no placeholder, arguments are appended at the
+  end. `kudasai test -run TestFoo` runs `go test -v ./tests/... -run TestFoo`.
+- `$@` is replaced by all arguments, in order.
+- `$1`, `$2`, ... `$N` are replaced by the corresponding positional argument.
+  A placeholder with no matching argument resolves to an empty string.
+
+## Built-in flags
+
+All built-in behaviour is behind a `--` flag, so every other name is free for
+custom commands.
+
+- `--help` — list available commands with their descriptions
+- `--version` — print the installed version
+- `--init` — scaffold a `.kudasai.json`, detecting the project type; asks for
+  confirmation before writing
+- `--init --force` — scaffold over an existing `.kudasai.json`
+- `--check` — validate the config file and report how many commands it defines
+- `--json` — print the commands as structured JSON
+
+## Project detection used by --init
+
+The first marker file found decides the template: `go.mod` (Go),
+`package.json` (Node.js), `Gemfile` (Ruby), `composer.json` (PHP),
+`pyproject.toml` then `requirements.txt` (Python). Each template defines
+`build`, `start`, `test` and `lint`. If no marker is found, a placeholder
+template is written.
+
+## Discovering commands programmatically
+
+`kudasai --json` is the intended entry point for coding agents. It prints:
+
+    {
+      "commands": {
+        "build": {
+          "run": "go build -o kudasai main.go",
+          "description": "Build the binary"
+        },
+        "start": { "builtin": true }
+      }
+    }
+
+Built-in commands are marked `"builtin": true` and carry no `run` field. To
+make this discoverable, add to the repository's agent context file
+(`AGENTS.md`, `CLAUDE.md`, `.cursorrules`):
+
+    Run `kudasai --json` to discover available commands in this repository.
+    Use `kudasai <command>` to execute them.
