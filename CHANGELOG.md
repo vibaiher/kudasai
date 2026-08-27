@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1
+
+### Fixed
+- Exit codes for commands terminated by a signal now follow the shell convention (`128 + N`): `130` for SIGINT, `137` for SIGKILL. They previously collapsed to `255`.
+
+### Added
+- Documentation site under `docs/`, published with GitHub Pages, including an `llms.txt` reference for AI agents.
+
 ## 0.2.0
 
 ### Added
