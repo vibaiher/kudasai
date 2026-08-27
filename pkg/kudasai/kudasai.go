@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"syscall"
 )
 
 var Version = "dev"
@@ -138,6 +139,23 @@ func InterpolateArgs(command string, args []string) string {
 	})
 
 	return command
+}
+
+func ExitCode(err error) int {
+	if err == nil {
+		return 0
+	}
+
+	var exitErr *exec.ExitError
+	if !errors.As(err, &exitErr) {
+		return 1
+	}
+
+	if status, ok := exitErr.Sys().(syscall.WaitStatus); ok && status.Signaled() {
+		return 128 + int(status.Signal())
+	}
+
+	return exitErr.ExitCode()
 }
 
 func Execute(command string) error {

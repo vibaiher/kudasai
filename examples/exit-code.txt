@@ -1,3 +1,7 @@
-$ echo '{"commands":{"fail": "exit 42"}}' > .kudasai.json
+$ echo '{"commands":{"fail": "exit 42", "sigint": "kill -INT $$", "sigkill": "kill -KILL $$"}}' > .kudasai.json
 $ kudasai fail; echo $?
 42
+$ kudasai sigint; echo $?
+130
+$ kudasai sigkill; echo $?
+137

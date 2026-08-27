@@ -318,3 +318,37 @@ func TestPrepare_ConfiguresStdin(t *testing.T) {
 		t.Errorf("Expected cmd.Stdin to be os.Stdin")
 	}
 }
+
+func TestExitCode_NoError(t *testing.T) {
+	if got := kudasai.ExitCode(nil); got != 0 {
+		t.Errorf("Expected 0 for a nil error, got %d", got)
+	}
+}
+
+func TestExitCode_NonZeroExit(t *testing.T) {
+	err := kudasai.Execute("exit 42")
+	if got := kudasai.ExitCode(err); got != 42 {
+		t.Errorf("Expected 42, got %d", got)
+	}
+}
+
+func TestExitCode_TerminatedBySIGINT(t *testing.T) {
+	err := kudasai.Execute("kill -INT $$")
+	if got := kudasai.ExitCode(err); got != 130 {
+		t.Errorf("Expected 130 for SIGINT, got %d", got)
+	}
+}
+
+func TestExitCode_TerminatedBySIGKILL(t *testing.T) {
+	err := kudasai.Execute("kill -KILL $$")
+	if got := kudasai.ExitCode(err); got != 137 {
+		t.Errorf("Expected 137 for SIGKILL, got %d", got)
+	}
+}
+
+func TestExitCode_UnrecognizedCommand(t *testing.T) {
+	err := kudasai.Run([]string{"nope-does-not-exist"})
+	if got := kudasai.ExitCode(err); got != 1 {
+		t.Errorf("Expected 1 for a non-exec error, got %d", got)
+	}
+}

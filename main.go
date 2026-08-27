@@ -10,15 +10,14 @@ import (
 )
 
 func main() {
-	args := os.Args[1:]  // Capture command-line arguments
+	args := os.Args[1:] // Capture command-line arguments
 
 	err := kudasai.Run(args)
 	if err != nil {
 		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			os.Exit(exitErr.ExitCode())
+		if !errors.As(err, &exitErr) {
+			fmt.Println(err)
 		}
-		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(kudasai.ExitCode(err))
 	}
 }

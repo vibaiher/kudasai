@@ -46,7 +46,8 @@ The script builds a fresh binary, creates a temp directory for each test file, a
 | `--init` (project detection, confirm) | `TestRun_Init*` | `init.txt` |
 | `--check` (validation) | `TestRun_Check*` | `check.txt` |
 | Unrecognized command error | `TestRun_InvalidCommand` | `invalid.txt` |
-| Exit code propagation | `TestExecute_PropagatesExitCode` | `exit-code.txt` |
+| Exit code propagation | `TestExecute_PropagatesExitCode`, `TestExitCode_*` | `exit-code.txt` |
+| Signal termination (128+N) | `TestExitCode_TerminatedBy*` | `exit-code.txt` |
 | String and object command formats | — | `descriptions.txt` |
 | Shell quoting | `TestShellQuote_*` | — |
 
